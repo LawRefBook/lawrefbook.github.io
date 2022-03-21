@@ -1,0 +1,16 @@
+baseURL = "/"
+title = "中国法律快查手册"
+languageCode = 'zh-cn'
+
+theme = ["hugo-book"]
+# enableGitInfo = true
+
+[params]
+  BookTheme = 'auto'
+
+  BookToC = true
+  BookSection = 'docs'
+
+  BookSearch = false
+  BookComments = false
+  BookFlatSection = true

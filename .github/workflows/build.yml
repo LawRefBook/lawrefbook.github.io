@@ -1,0 +1,22 @@
+name: build
+
+on:
+  repository_dispatch:
+    types: [build]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 'Building...'
+      uses: reuixiy/hugo-deploy@v1
+      env:
+        DEPLOY_REPO: LawRefBook/lawrefbook.github.io
+        DEPLOY_BRANCH: build
+        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        TZ: Asia/Shanghai
+    - name: "Sending Notification"
+      uses: fjogeleit/http-request-action@master
+      with:
+        url: ${{ secrets.NOTICE_URL }}
