@@ -4,3 +4,4 @@
 [submodule "content/docs"]
 	path = content/docs
 	url = git@github.com:LawRefBook/Laws.git
+	branch = master
