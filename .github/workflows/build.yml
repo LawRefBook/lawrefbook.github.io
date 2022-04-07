@@ -25,6 +25,8 @@ jobs:
 
     - name: Commit update
       run: |
+        git config --global user.email "bot@github.com"
+        git config --global user.name "Bot"
         git commit -am "Auto updated submodule references" && git push || echo "No changes to commit"
 
     - name: 'Building...'
