@@ -23,3 +23,5 @@ for dir in content/docs/地方性法规/*/; do
 	- $dir: $LawCnt 部
     " "content/_index.md"
 done
+
+sed -i "s/更新时间: .*/更新时间: `date`/g" "content/_index.md"
