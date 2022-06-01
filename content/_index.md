@@ -16,7 +16,7 @@ title: 首页
 [![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/app/apple-store/id1612953870?pt=124208302&ct=github&mt=8)
 
 # 收录信息
- - 法律: 373 部 [^1]
+ - 法律: 388 部 [^1]
  - 司法解释: 388 部
  - 行政法规: 620 部
  - 地方性法规
@@ -25,7 +25,7 @@ title: 首页
 	- 山东: 472 部
 	- 北京: 165 部
 	- 上海: 206 部
- - 更新时间: Thu May 12 00:16:46 UTC 2022
+ - 更新时间: Wed Jun  1 07:59:02 UTC 2022
 
 # 项目工作流程
 
