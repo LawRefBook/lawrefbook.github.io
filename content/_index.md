@@ -16,8 +16,8 @@ title: 首页
 [![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/app/apple-store/id1612953870?pt=124208302&ct=github&mt=8)
 
 # 收录信息
- - 法律: 388 部 [^1]
- - 司法解释: 388 部
+ - 法律: 389 部 [^1]
+ - 司法解释: 389 部
  - 行政法规: 620 部
  - 地方性法规
 	- 浙江: 410 部
@@ -27,8 +27,9 @@ title: 首页
 	- 上海: 206 部
  - 部门规章
 	- 市场监督管理总局: 15 部
+	- 国家安全部: 1 部
 	- 公安部: 9 部
- - 更新时间: Tue Jun  7 04:28:08 UTC 2022
+ - 更新时间: Fri Jun 10 02:27:19 UTC 2022
 
 # 项目工作流程
 
