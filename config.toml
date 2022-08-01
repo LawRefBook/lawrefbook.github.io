@@ -1,6 +1,7 @@
 baseURL = "/"
 title = "中国法律快查手册"
 languageCode = 'zh-cn'
+defaultContentLanguage = 'zh'
 
 theme = ["hugo-book"]
 # enableGitInfo = true
@@ -11,6 +12,6 @@ theme = ["hugo-book"]
   BookToC = true
   BookSection = 'docs'
 
-  BookSearch = false
+  BookSearch = true
   BookComments = false
   BookFlatSection = true
