@@ -16,7 +16,7 @@ title: 首页
 [![App Store](https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/app/apple-store/id1612953870?pt=124208302&ct=github&mt=8)
 
 # 收录信息
- - 法律: 403 部 [^1]
+ - 法律: 409 部 [^1]
  - 司法解释: 392 部
  - 行政法规: 621 部
  - 地方性法规
@@ -30,7 +30,7 @@ title: 首页
 	- 国家安全部: 1 部
 	- 公安部: 9 部
 	- 人力资源社会保障部: 2 部
- - 更新时间: Wed May 10 02:58:18 UTC 2023
+ - 更新时间: Fri May 12 07:18:23 UTC 2023
 
 # 项目工作流程
 
