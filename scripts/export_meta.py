@@ -344,6 +344,19 @@ def export(content_root, out_path):
         "laws": laws_out,
     }
 
+    # 内容和上次一样时沿用上次的日期，文件不变：每晚的构建没有改动时不用提交，也不用重新部署。
+    # updated 也就表示数据最后一次变化的日期
+    if out_path.is_file():
+        try:
+            previous = json.loads(out_path.read_text(encoding="utf-8"))
+        except ValueError:
+            previous = None
+        if isinstance(previous, dict) and previous.get("updated"):
+            rest = lambda d: {k: v for k, v in d.items() if k != "updated"}
+            if rest(previous) == rest(out):
+                out["updated"] = previous["updated"]
+                print("内容没有变化", file=sys.stderr)
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     # 每部法律一行，内容更新时 git 的差异小
     with out_path.open("w", encoding="utf-8") as f:
