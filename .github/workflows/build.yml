@@ -4,7 +4,15 @@ on:
   repository_dispatch:
     types: [build]
   workflow_dispatch:
+  # 每晚构建：法律的状态（未施行、现行、已失效）按北京时间的日期算，
+  # Laws 没有新提交时也要每天更新一次。北京时间 0:17（UTC 16:17），避开整点排队
+  schedule:
+    - cron: '17 16 * * *'
 
+# 每晚构建和 Laws 触发的构建可能同时开始，都会推送提交，排队一个一个来
+concurrency:
+  group: build
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -30,14 +38,25 @@ jobs:
       run: |
         python3 scripts/export_meta.py content/docs data/laws.json
 
+    # 子模块引用或 data/laws.json 有变化时才提交。export_meta.py 在内容没变时沿用原来的日期，文件不变
     - name: Commit update
+      id: commit
       run: |
         git config --global user.email "bot@github.com"
         git config --global user.name "Bot"
         git add data/laws.json
-        git commit -am "Auto updated submodule references" && git push || echo "No changes to commit"
+        if git diff --cached --quiet && git diff --quiet --ignore-submodules=dirty; then
+          echo "No changes to commit"
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+        else
+          git commit -am "Auto updated submodule references"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+        fi
 
+    # 每晚构建没有任何变化时不用重新部署；Laws 触发和手动运行总是部署
     - name: 'Building...'
+      if: steps.commit.outputs.changed == 'true' || github.event_name != 'schedule'
       uses: reuixiy/hugo-deploy@v1
       env:
         DEPLOY_REPO: LawRefBook/lawrefbook.github.io
@@ -46,6 +65,7 @@ jobs:
         TZ: Asia/Shanghai
 
     - name: "Sending Notification"
+      if: steps.commit.outputs.changed == 'true' || github.event_name != 'schedule'
       uses: fjogeleit/http-request-action@master
       with:
         url: ${{ secrets.NOTICE_URL }}
