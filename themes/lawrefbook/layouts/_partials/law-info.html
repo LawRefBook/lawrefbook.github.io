@@ -1,0 +1,12 @@
+{{- /*
+  一部法律（一个正文文件）的信息。meta 来自 data/laws.json（scripts/export_meta.py），
+  没有这份数据或数据库里没有这部法律时为空，页面照常显示，只是没有状态和版本。
+  调用时用 partialCached "law-info.html" . .RelPermalink
+*/ -}}
+{{- $key := "" -}}
+{{- with .File }}{{ $key = .Path | strings.TrimPrefix "docs/" | strings.TrimSuffix ".md" }}{{ end -}}
+{{- $meta := dict -}}
+{{- with hugo.Data.laws }}{{ with index .laws $key }}{{ $meta = . }}{{ end }}{{ end -}}
+{{- $name := $meta.name | default .Title -}}
+{{- if not $name }}{{ with .File }}{{ $name = replaceRE `\(\d{4}-\d{2}-\d{2}\)$` "" .ContentBaseName }}{{ end }}{{ end -}}
+{{- return dict "key" $key "meta" $meta "name" $name -}}

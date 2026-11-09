@@ -1,0 +1,4 @@
+{{- /* 分类在 Laws 仓库里的目录，和 data/laws.json 的 categories 对应。/docs 本身为空 */ -}}
+{{- $k := "" -}}
+{{- with .Params.key }}{{ $k = . }}{{ else }}{{ with .File }}{{ $k = .Dir | strings.TrimPrefix "docs/" | strings.TrimSuffix "/" }}{{ end }}{{ end -}}
+{{- return $k -}}

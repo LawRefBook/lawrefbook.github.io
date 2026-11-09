@@ -1,0 +1,10 @@
+{{- /* 修订对比的地址。参数：new、old（法律文件）。地址参数是页面路径去掉 /docs/ 和结尾的斜杠 */ -}}
+{{- $url := "" -}}
+{{- $new := site.GetPage (printf "/docs/%s" .new) -}}
+{{- $old := site.GetPage (printf "/docs/%s" .old) -}}
+{{- with $new }}{{ with $old -}}
+  {{- $n := (urls.Parse $new.RelPermalink).Path | strings.TrimPrefix "/docs/" | strings.TrimSuffix "/" -}}
+  {{- $o := (urls.Parse $old.RelPermalink).Path | strings.TrimPrefix "/docs/" | strings.TrimSuffix "/" -}}
+  {{- $url = printf "%s?%s" ("diff/" | relURL) (querify "new" $n "old" $o) -}}
+{{- end }}{{ end -}}
+{{- return $url -}}

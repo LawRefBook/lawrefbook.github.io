@@ -1,0 +1,94 @@
+{{- $isLaw := and (eq .Kind "page") (eq .Section "docs") -}}
+{{- $title := site.Title -}}
+{{- $barTitle := "" -}}
+{{- $desc := site.Params.description -}}
+{{- if .IsHome -}}
+  {{- $title = printf "%s · 法律法规全文查阅" site.Title -}}
+{{- else if eq .Kind "section" -}}
+  {{- $barTitle = partial "section-name.html" . -}}
+  {{- $title = printf "%s - %s" $barTitle site.Title -}}
+  {{- if ne .Path "/docs" }}{{ $desc = printf "%s：共 %d 部，列出现行版本，可筛选、搜索，逐条查阅。" $barTitle (partialCached "section-count.html" . .RelPermalink) }}{{ end -}}
+{{- else if $isLaw -}}
+  {{- $v := partialCached "law-view.html" . .RelPermalink -}}
+  {{- $i := partialCached "law-info.html" . .RelPermalink -}}
+  {{- $barTitle = $v.title | default $i.name -}}
+  {{- $title = printf "%s - %s" $barTitle site.Title -}}
+  {{- with substr $v.body 0 4000 | plainify | replaceRE `\s+` " " | strings.TrimSpace }}{{ $desc = truncate 120 . }}{{ end -}}
+{{- else if eq .Kind "404" -}}
+  {{- $title = printf "页面不存在 - %s" site.Title -}}
+{{- else -}}
+  {{- $barTitle = .Title -}}
+  {{- $title = printf "%s - %s" .Title site.Title -}}
+  {{- with .Description }}{{ $desc = . }}{{ end -}}
+{{- end -}}
+{{- $css := resources.Get "css/main.css" | minify | fingerprint "sha256" -}}
+{{- $js := resources.Get "js/app.js" | js.Build (dict "minify" true "target" "es2019") | fingerprint "sha256" -}}
+{{- $index := "" -}}
+{{- with site.Home.OutputFormats.Get "searchindex" }}{{ $index = printf "%s?v=%s" .RelPermalink (now.Format "20060102150405") }}{{ end -}}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ $title }}</title>
+  <meta name="description" content="{{ $desc }}">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-itunes-app" content="app-id=1612953870">
+  {{- if .Params.noindex }}
+  <meta name="robots" content="noindex">
+  {{- else if ne .Kind "404" }}
+  <link rel="canonical" href="{{ .Permalink }}">
+  {{- end }}
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ "favicon-32.png" | relURL }}">
+  <link rel="icon" type="image/png" sizes="64x64" href="{{ "favicon-64.png" | relURL }}">
+  <link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">
+  <meta property="og:site_name" content="{{ site.Title }}">
+  <meta property="og:type" content="{{ if $isLaw }}article{{ else }}website{{ end }}">
+  <meta property="og:title" content="{{ $barTitle | default site.Title }}">
+  <meta property="og:description" content="{{ $desc }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  <meta property="og:image" content="{{ "icon-512.png" | absURL }}">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary">
+  {{- if .IsHome }}
+  <script type="application/ld+json">
+    {{ dict
+      "@context" "https://schema.org"
+      "@type" "WebSite"
+      "name" site.Title
+      "url" site.Home.Permalink
+      "potentialAction" (dict "@type" "SearchAction" "target" (printf "%s?q={search_term_string}" site.Home.Permalink) "query-input" "required name=search_term_string")
+      | jsonify | safeJS }}
+  </script>
+  {{- end }}
+  <script>
+    (function () {
+      try {
+        var d = document.documentElement, t = localStorage.getItem("lrb:theme");
+        if (t === "light" || t === "dark") d.setAttribute("data-theme", t);
+        var f = parseInt(localStorage.getItem("lrb:fs"), 10);
+        if (f >= 12 && f <= 32) d.style.setProperty("--law-fs", f + "px");
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+</head>
+<body class="kind-{{ .Kind }}{{ if $isLaw }} is-law{{ end }}" data-search-index="{{ $index }}">
+  <a class="skip-link" href="#main">跳到正文</a>
+  {{ partial "icons.html" . }}
+  {{ partial "header.html" . }}
+  <main id="main" tabindex="-1">
+    {{- block "main" . }}{{ end }}
+  </main>
+  {{ partial "footer.html" . }}
+  {{ partial "search-dialog.html" . }}
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+  <button class="to-top" type="button" data-to-top aria-label="回到顶部" tabindex="-1">
+    <svg class="i" aria-hidden="true"><use href="#i-arrow-up"/></svg>
+  </button>
+  <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
+</body>
+</html>

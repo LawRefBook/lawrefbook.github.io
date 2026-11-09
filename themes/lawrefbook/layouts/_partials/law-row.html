@@ -1,0 +1,19 @@
+{{- /* 法律列表的一行：名称、状态标签、版本数，右边是日期。
+  参数：page；date 是右边显示的文字（默认是公布日期）；anchor 是链接到正文的某一处；href 换成别的地址（比如修订对比） */ -}}
+{{- $p := .page -}}
+{{- $i := partialCached "law-info.html" $p $p.RelPermalink -}}
+{{- $m := $i.meta -}}
+{{- $struck := in (slice "revised" "expired" "abolished") $m.status -}}
+{{- $versions := int ($m.versions | default 1) -}}
+{{- $date := .date -}}
+{{- if not $date }}{{ with $m.pub | default $m.from }}{{ $date = . }}{{ end }}{{ end -}}
+<li class="row" data-n="{{ $i.name }}"{{ if $struck }} data-old{{ end }}>
+  <a class="row-link" href="{{ with .href }}{{ . }}{{ else }}{{ $p.RelPermalink }}{{ with $.anchor }}#{{ . }}{{ end }}{{ end }}">
+    <span class="row-main">
+      <span class="row-title{{ if $struck }} is-struck{{ end }}">{{ $i.name }}</span>
+      {{- partial "badges-list.html" $m -}}
+      {{- if gt $versions 1 }}<span class="ver">{{ $versions }} 个版本</span>{{ end -}}
+    </span>
+    {{- with $date }}<span class="row-date">{{ . }}</span>{{ end }}
+  </a>
+</li>

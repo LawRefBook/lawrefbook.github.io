@@ -1,0 +1,4 @@
+# 中国法律快查手册的网站主题，界面跟 iOS App 保持一致
+[module.hugoVersion]
+  extended = false
+  min = "0.158.0"

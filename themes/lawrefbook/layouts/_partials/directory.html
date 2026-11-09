@@ -1,0 +1,57 @@
+{{- /*
+  分类目录：法律、法规与解释、部门规章、地方性法规、司法案例。首页和“全部法律”共用。
+  参数 compact：首页上部门规章只显示一项入口，不展开各部门
+*/ -}}
+{{- $compact := .compact -}}
+{{- $docs := site.GetPage "/docs" -}}
+{{- $laws := slice -}}
+{{- $others := slice -}}
+{{- $nested := slice -}}
+{{- with $docs -}}
+{{- range partial "sorted-sections.html" .Sections -}}
+  {{- if not (partialCached "section-count.html" . .RelPermalink) }}{{ continue }}{{ end -}}
+  {{- $k := partial "section-key.html" . -}}
+  {{- $group := "" -}}
+  {{- with hugo.Data.laws }}{{ with index .categories $k }}{{ $group = .group }}{{ end }}{{ end -}}
+  {{- if .Sections }}{{ $nested = $nested | append . -}}
+  {{- else if eq $group "法律法规" }}{{ $laws = $laws | append . -}}
+  {{- else }}{{ $others = $others | append . }}{{ end -}}
+{{- end -}}
+{{- end -}}
+
+{{- with $laws }}
+<section class="block" aria-labelledby="dir-laws">
+  <h2 class="block-title" id="dir-laws">法律</h2>
+  <div class="tile-grid">{{ range . }}{{ partial "directory-tile.html" . }}{{ end }}</div>
+</section>
+{{- end }}
+{{- with $others }}
+<section class="block" aria-labelledby="dir-others">
+  <h2 class="block-title" id="dir-others">法规与解释</h2>
+  <div class="tile-grid">{{ range . }}{{ partial "directory-tile.html" . }}{{ end }}</div>
+</section>
+{{- end }}
+{{- range $nested }}
+{{- $name := partial "section-name.html" . }}
+{{- $k := partial "section-key.html" . }}
+{{- $subs := partial "sorted-sections.html" .Sections }}
+<section class="block" aria-label="{{ $name }}">
+  <h2 class="block-title">
+    <a href="{{ .RelPermalink }}">{{ $name }}</a>
+    <a class="block-more" href="{{ .RelPermalink }}">共 {{ partialCached "section-count.html" . .RelPermalink }} 部<svg class="i i-xs" aria-hidden="true"><use href="#i-chevron-right"/></svg></a>
+  </h2>
+  {{- if and $compact (eq $k "部门规章") }}
+  {{- $names := slice }}{{ range first 6 $subs }}{{ $names = $names | append (partial "section-name.html" .) }}{{ end }}
+  <a class="summary-card" href="{{ .RelPermalink }}">
+    <svg class="i" aria-hidden="true"><use href="#i-building"/></svg>
+    <span>
+      <strong>{{ len $subs }} 个部门的规章</strong>
+      <span>{{ delimit $names "、" }} 等</span>
+    </span>
+    <svg class="i i-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+  </a>
+  {{- else }}
+  <div class="tile-grid">{{ range $subs }}{{ if partialCached "section-count.html" . .RelPermalink }}{{ partial "directory-tile.html" . }}{{ end }}{{ end }}</div>
+  {{- end }}
+</section>
+{{- end }}

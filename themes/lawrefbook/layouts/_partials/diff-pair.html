@@ -1,0 +1,19 @@
+{{- /*
+  修订对比默认的两个版本（和 App 的 TLaw.diffPair 一样）：
+  现行版本之后有待施行的新版时和新版比，看即将改什么；否则和上一版比；最早的版本和下一版比。
+  参数：key（法律文件）、meta（data/laws.json 里的信息）。返回 dict new old（文件），没有其他版本时为空
+*/ -}}
+{{- $key := .key -}}
+{{- $m := .meta | default dict -}}
+{{- $out := dict -}}
+{{- with $m.lineage }}{{ with index hugo.Data.laws.lineages . -}}
+  {{- $keys := . -}}
+  {{- $pos := -1 -}}
+  {{- range $i, $k := $keys }}{{ if eq $k $key }}{{ $pos = $i }}{{ end }}{{ end -}}
+  {{- if ge $pos 0 -}}
+    {{- if $m.upcoming }}{{ $out = dict "new" $m.upcoming.key "old" $key -}}
+    {{- else if lt (add $pos 1) (len $keys) }}{{ $out = dict "new" $key "old" (index $keys (add $pos 1)) -}}
+    {{- else if gt $pos 0 }}{{ $out = dict "new" (index $keys (sub $pos 1)) "old" $key }}{{ end -}}
+  {{- end -}}
+{{- end }}{{ end -}}
+{{- return $out -}}

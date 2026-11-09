@@ -1,0 +1,11 @@
+{{- /* 分类显示的名称：数据库里的分类名，其次是目录名 */ -}}
+{{- $n := "" -}}
+{{- if eq .Kind "home" }}{{ $n = "首页" -}}
+{{- else if eq .Path "/docs" }}{{ $n = "全部法律" -}}
+{{- else -}}
+  {{- $k := partial "section-key.html" . -}}
+  {{- with hugo.Data.laws }}{{ with index .categories $k }}{{ $n = .name }}{{ end }}{{ end -}}
+  {{- if not $n }}{{ $n = index (dict "案例" "司法案例" "DLC" "地方性法规") $k | default .Title }}{{ end -}}
+  {{- if and (not $n) $k }}{{ $n = path.Base $k }}{{ end -}}
+{{- end -}}
+{{- return $n -}}

@@ -1,0 +1,32 @@
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a class="logo" href="{{ "/" | relURL }}">
+        <img src="{{ "favicon-64.png" | relURL }}" alt="" width="24" height="24" loading="lazy">
+        <span>{{ site.Title }}</span>
+      </a>
+      <p>法律文本不适用《中华人民共和国著作权法》，属于公有领域。本站内容仅供参考，以官方发布的文本为准。</p>
+      {{- with hugo.Data.laws }}{{ with .updated }}
+      <p>数据更新于 {{ partial "cn-date.html" . }}</p>
+      {{- end }}{{ end }}
+    </div>
+    <nav aria-labelledby="footer-browse">
+      <h2 id="footer-browse">浏览</h2>
+      <a href="{{ "/docs/" | relURL }}">全部法律</a>
+      {{- with site.GetPage "/docs/行政法规" }}<a href="{{ .RelPermalink }}">行政法规</a>{{ end }}
+      {{- with site.GetPage "/docs/司法解释" }}<a href="{{ .RelPermalink }}">司法解释</a>{{ end }}
+      {{- with site.GetPage "/docs/部门规章" }}<a href="{{ .RelPermalink }}">部门规章</a>{{ end }}
+      {{- with site.GetPage "/docs/DLC" }}<a href="{{ .RelPermalink }}">地方性法规</a>{{ end }}
+    </nav>
+    <nav aria-labelledby="footer-project">
+      <h2 id="footer-project">项目</h2>
+      <a href="{{ site.Params.lawsRepo }}" rel="noopener">GitHub</a>
+      <a href="{{ site.Params.lawsRepo }}/issues" rel="noopener">反馈问题</a>
+      <a href="{{ site.Params.source }}" rel="noopener">国家法律法规数据库</a>
+    </nav>
+    <nav aria-labelledby="footer-app">
+      <h2 id="footer-app">应用</h2>
+      <a href="{{ site.Params.appStore }}" rel="noopener">iOS 应用</a>
+    </nav>
+  </div>
+</footer>

@@ -1,0 +1,128 @@
+{{- define "main" -}}
+{{- $d := hugo.Data.laws | default dict -}}
+{{- $docs := site.GetPage "/docs" -}}
+
+{{- /* 常用法律：按名称在数据里找列表里显示的版本 */ -}}
+{{- $popular := slice "劳动合同法" "刑法" "公司法" "民事诉讼法" "道路交通安全法" "个人信息保护法" -}}
+{{- $found := newScratch -}}
+{{- with $d.laws -}}
+  {{- range $k, $v := . -}}
+    {{- if and $v.list (in $popular $v.name) (in (slice "法律" "宪法") $v.level) }}{{ $found.Set $v.name $k }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+
+<section class="hero">
+  <div class="container hero-inner">
+    <h1 class="hero-title">{{ site.Title }}</h1>
+    <p class="hero-sub">
+      {{- with $docs }}收录 {{ partialCached "section-count.html" . .RelPermalink }} 部{{ end }}法律、行政法规、司法解释、部门规章和地方性法规，现行与历史版本一目了然。
+    </p>
+    <button class="hero-search" type="button" data-open-search>
+      <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+      <span class="hero-search-label">搜索法律名称或关键字，如“劳动合同法 第三十九条”</span>
+      <kbd data-shortcut>/</kbd>
+    </button>
+    <p class="hero-links">
+      <span>常用：</span>
+      {{- with site.GetPage "/docs/民法典" }}<a href="{{ .RelPermalink }}">民法典</a>{{ end }}
+      {{- range $popular }}{{ with $found.Get . }}{{ with site.GetPage (printf "/docs/%s" .) }}<a href="{{ .RelPermalink }}">{{ (partialCached "law-info.html" . .RelPermalink).name }}</a>{{ end }}{{ end }}{{ end }}
+    </p>
+  </div>
+</section>
+
+{{- with partial "dev-hint.html" . }}<div class="container" style="padding-top:24px">{{ . }}</div>{{ end }}
+<div class="container home-grid">
+  <div class="home-side home-side--top">
+    <section class="panel" id="recent" aria-labelledby="recent-title" data-recent-section hidden>
+      <h2 class="panel-title"><span id="recent-title">最近浏览</span><button class="link-btn" type="button" data-recent-clear>清除</button></h2>
+      <ul class="rows rows--compact" data-recent-home></ul>
+    </section>
+
+    <section class="panel" id="favorites" aria-labelledby="fav-title" data-fav-section hidden>
+      <h2 class="panel-title"><span id="fav-title">我的收藏</span><span class="panel-note">保存在本机</span></h2>
+      <ul class="rows rows--compact" data-fav-list></ul>
+    </section>
+
+    {{- with $d.feed }}{{ if or .recent .upcoming }}
+    <section class="panel" aria-labelledby="feed-title" data-tabs>
+      <h2 class="panel-title" id="feed-title">修订动态</h2>
+      <div class="tabs" role="tablist" aria-label="修订动态">
+        {{- with .recent }}
+        <button class="tab" type="button" role="tab" id="tab-recent" aria-controls="panel-recent" aria-selected="true">最近修订<span class="tab-count">{{ len . }}</span></button>
+        {{- end }}
+        {{- with .upcoming }}
+        <button class="tab" type="button" role="tab" id="tab-upcoming" aria-controls="panel-upcoming" aria-selected="{{ if $d.feed.recent }}false{{ else }}true{{ end }}">即将施行<span class="tab-count">{{ len . }}</span></button>
+        {{- end }}
+      </div>
+      {{- with .recent }}
+      <div role="tabpanel" id="panel-recent" aria-labelledby="tab-recent">
+        <p class="panel-note">近半年公布的新版本，点开查看修订对比</p>
+        <ul class="rows rows--compact" data-collapse="5">
+          {{- range . }}{{ with site.GetPage (printf "/docs/%s" .) }}
+          {{- $m := (partialCached "law-info.html" . .RelPermalink).meta }}
+          {{- $diff := "" }}{{ with partial "diff-pair.html" (dict "key" (partialCached "law-info.html" . .RelPermalink).key "meta" $m) }}{{ $diff = partial "diff-url.html" . }}{{ end }}
+          {{ partial "law-row.html" (dict "page" . "date" (printf "%s 公布" $m.pub) "href" $diff) }}
+          {{- end }}{{ end }}
+        </ul>
+      </div>
+      {{- end }}
+      {{- with .upcoming }}
+      <div role="tabpanel" id="panel-upcoming" aria-labelledby="tab-upcoming"{{ if $d.feed.recent }} hidden{{ end }}>
+        <p class="panel-note">已公布、尚未施行的法律，点开查看将要改动的内容</p>
+        <ul class="rows rows--compact" data-collapse="5">
+          {{- range . }}{{ with site.GetPage (printf "/docs/%s" .) }}
+          {{- $m := (partialCached "law-info.html" . .RelPermalink).meta }}
+          {{- $diff := "" }}{{ with partial "diff-pair.html" (dict "key" (partialCached "law-info.html" . .RelPermalink).key "meta" $m) }}{{ $diff = partial "diff-url.html" . }}{{ end }}
+          {{ partial "law-row.html" (dict "page" . "date" (printf "%s 施行" $m.from) "href" $diff) }}
+          {{- end }}{{ end }}
+        </ul>
+      </div>
+      {{- end }}
+    </section>
+    {{- end }}{{ end }}
+  </div>
+
+  <div class="home-main">
+    {{ partial "directory.html" (dict "compact" true) }}
+  </div>
+
+  <div class="home-side home-side--bottom">
+    {{- with $d.stats }}
+    {{- $st := . }}
+    <section class="panel" aria-labelledby="stats-title">
+      <h2 class="panel-title"><span id="stats-title">收录统计</span>{{ with $d.updated }}<span class="panel-note">更新于 {{ partial "cn-date.html" . }}</span>{{ end }}</h2>
+      <dl class="stats">
+        {{- $tiles := slice
+          (dict "label" "法律" "n" (add (int (index $st "法律" | default 0)) (int (index $st "宪法" | default 0))) "url" "/docs/")
+          (dict "label" "行政法规" "n" (index $st "行政法规") "url" "/docs/行政法规/")
+          (dict "label" "司法解释" "n" (index $st "司法解释") "url" "/docs/司法解释/")
+          (dict "label" "部门规章" "n" (index $st "部门规章") "url" "/docs/部门规章/")
+          (dict "label" "地方性法规" "n" (index $st "地方性法规") "url" "/docs/dlc/")
+          (dict "label" "司法案例" "n" (index $st "案例") "url" "/docs/案例/")
+        }}
+        {{- range $tiles }}{{ if .n }}
+        <div class="stat"><dt><a href="{{ .url | relURL }}">{{ .label }}</a></dt><dd>{{ .n }}</dd></div>
+        {{- end }}{{ end }}
+      </dl>
+      <p class="panel-note">按部计数，不含历史版本；民法典按编计算。</p>
+    </section>
+    {{- end }}
+
+    <a class="app-card" href="{{ site.Params.appStore }}" rel="noopener">
+      <img src="{{ "apple-touch-icon.png" | relURL }}" alt="" width="48" height="48" loading="lazy">
+      <span class="app-card-text">
+        <strong>iOS 应用</strong>
+        <span>离线查阅、收藏与高亮、修订对比，支持 iPhone 和 iPad</span>
+      </span>
+      <span class="btn btn--primary btn--sm">App Store</span>
+    </a>
+  </div>
+</div>
+
+{{- with .Content }}
+<section class="container about" aria-labelledby="about-title">
+  <h2 class="block-title" id="about-title">关于本站</h2>
+  <div class="prose">{{ . }}</div>
+</section>
+{{- end }}
+{{- end -}}

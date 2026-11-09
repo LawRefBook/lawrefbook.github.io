@@ -1,0 +1,41 @@
+{{- /*
+  搜索索引，首页的 searchindex 输出（见 config.toml），只在第一次打开搜索时下载
+  s：分类 [名称, 地址, 部数]
+  i：法律 [名称, 地址（相对所在分类）, 分类序号, 状态, 版本数, 是否列表里显示的版本, 公布日期]
+  状态：空 现行，u 现行且有新版待施行，p 未实施，r 已修订，e 已失效，a 已废止
+  直接输出文本：一万多项用 append 或 Scratch.Add 拼列表，每次都要检查整个列表，会非常慢
+*/ -}}
+{{- $codes := dict "revised" "r" "expired" "e" "abolished" "a" "pending" "p" -}}
+{{- $sections := where (where site.Pages "Kind" "section") "Section" "docs" -}}
+{{- $s := newScratch -}}
+{"s":[
+{{- range $idx, $sec := $sections -}}
+  {{- $name := partial "section-name.html" $sec -}}
+  {{- with $sec.Parent }}{{ if and (ne .Path "/docs") (not .IsHome) }}{{ $name = printf "%s · %s" (partial "section-name.html" .) $name }}{{ end }}{{ end -}}
+  {{- $s.SetInMap "sidx" $sec.RelPermalink $idx -}}
+  {{- if $idx }},{{ end -}}
+  {{- slice $name (urls.Parse $sec.RelPermalink).Path (partialCached "section-count.html" $sec $sec.RelPermalink) | jsonify -}}
+{{- end -}}
+],"i":[
+{{- $sidx := $s.Get "sidx" | default dict -}}
+{{- range $n, $p := where site.RegularPages "Section" "docs" -}}
+  {{- $i := partialCached "law-info.html" $p $p.RelPermalink -}}
+  {{- $m := $i.meta -}}
+  {{- $url := (urls.Parse $p.RelPermalink).Path -}}
+  {{- $si := -1 -}}
+  {{- $slug := $url -}}
+  {{- with $p.Parent -}}
+    {{- if isset $sidx .RelPermalink }}{{ $si = index $sidx .RelPermalink }}{{ end -}}
+    {{- $secURL := (urls.Parse .RelPermalink).Path -}}
+    {{- if and (ge $si 0) (hasPrefix $url $secURL) }}{{ $slug = strings.TrimPrefix $secURL $url }}{{ else }}{{ $si = -1 }}{{ end -}}
+  {{- end -}}
+  {{- $st := index $codes ($m.status | default "") | default "" -}}
+  {{- if and (eq $st "") $m.upcoming }}{{ $st = "u" }}{{ end -}}
+  {{- $listed := cond (or (not $m) $m.list) 1 0 -}}
+  {{- $versions := int ($m.versions | default 1) -}}
+  {{- $pub := "" -}}
+  {{- if gt $versions 1 }}{{ $pub = $m.pub | default $m.from | default "" }}{{ end -}}
+  {{- if $n }},{{ end -}}
+  {{- slice $i.name $slug $si $st $versions $listed $pub | jsonify -}}
+{{- end -}}
+]}

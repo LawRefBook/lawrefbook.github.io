@@ -1,0 +1,8 @@
+{{- /* 面包屑：首页 › 全部法律 › 分类。窄屏不显示，用顶栏的返回 */ -}}
+<nav class="crumbs" aria-label="当前位置">
+  <a href="{{ "/" | relURL }}">首页</a>
+  {{- range .Ancestors.Reverse }}{{ if not .IsHome }}
+  <svg class="i i-xs" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+  <a href="{{ .RelPermalink }}">{{ partial "section-name.html" . }}</a>
+  {{- end }}{{ end }}
+</nav>

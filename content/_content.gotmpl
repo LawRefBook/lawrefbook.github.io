@@ -1,0 +1,15 @@
+{{- /*
+  Laws 仓库（content/docs）里没有 _index.md 的目录，Hugo 不当作分类，里面的法律会并到上一级，
+  比如部门规章下的各部委、大部分地区的地方性法规。这里按 data/laws.json 补上这些分类页，
+  页面地址不变。data/laws.json 由 scripts/export_meta.py 生成。
+*/ -}}
+{{- with hugo.Data.laws -}}
+  {{- range .sections -}}
+    {{- $.AddPage (dict
+      "kind" "section"
+      "path" (printf "docs/%s" .key)
+      "title" .title
+      "params" (dict "key" .key)
+    ) -}}
+  {{- end -}}
+{{- end -}}

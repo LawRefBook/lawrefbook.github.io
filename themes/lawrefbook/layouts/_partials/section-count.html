@@ -1,0 +1,5 @@
+{{- /* 分类里有几部法律：列出来的法律（不算历史版本），包含下级分类。
+  按实际的页面算，不用 data/laws.json 的数字：正文没拉下来时（content/docs 是空的）显示 0，不会对不上 */ -}}
+{{- $n := len (partialCached "section-laws.html" . .RelPermalink).list -}}
+{{- range .Sections }}{{ $n = add $n (partialCached "section-count.html" . .RelPermalink) }}{{ end -}}
+{{- return $n -}}

@@ -24,18 +24,17 @@ jobs:
         git pull --recurse-submodules
         git submodule update --remote --recursive
 
-    - name: Re-structure
+    # 从 Laws 的数据库导出法律的状态、版本、排序和统计，模板读取 data/laws.json
+    # 部署时 hugo-deploy 会重新克隆仓库，所以这个文件要和子模块引用一起提交
+    - name: Export law metadata
       run: |
-        bash scripts/move.sh
-
-    - name: Update Statistics
-      run: |
-        bash scripts/update.sh
+        python3 scripts/export_meta.py content/docs data/laws.json
 
     - name: Commit update
       run: |
         git config --global user.email "bot@github.com"
         git config --global user.name "Bot"
+        git add data/laws.json
         git commit -am "Auto updated submodule references" && git push || echo "No changes to commit"
 
     - name: 'Building...'

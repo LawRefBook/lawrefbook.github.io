@@ -1,0 +1,41 @@
+{{- /* 搜索：没输入时显示最近搜索和最近浏览（和 App 一样先显示搜索历史），输入后即时显示结果 */ -}}
+<dialog class="search-dialog" id="search" aria-label="搜索法律法规">
+  <div class="search-head">
+    <label class="input">
+      <svg class="i i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+      <span class="visually-hidden">搜索法律法规</span>
+      <input id="search-input" type="search" placeholder="法律名称或关键字，如：劳动合同法" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-controls="search-results">
+      <button class="clear-btn" type="button" data-search-clear hidden aria-label="清除">
+        <svg class="i i-sm" aria-hidden="true"><use href="#i-x-circle"/></svg>
+      </button>
+    </label>
+    <button class="icon-btn search-close" type="button" data-search-close aria-label="关闭搜索" title="关闭（Esc）">
+      <svg class="i" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
+  </div>
+  <div class="search-body" data-search-body>
+    <div data-search-idle>
+      <div data-search-history hidden>
+        <h2 class="section-title"><span>最近搜索</span><button class="link-btn" type="button" data-history-clear>清除</button></h2>
+        <div class="history" data-history-list></div>
+      </div>
+      <div data-search-recent hidden>
+        <h2 class="section-title">最近浏览</h2>
+        <ul class="search-results" data-recent-list></ul>
+      </div>
+      <div class="search-tips" data-search-tips>
+        <p>输入法律名称或关键字，比如“劳动合同”“个人信息”。</p>
+        <p>加上条号可以直接跳到那一条，比如“刑法 第二十条”“民法典 1165”。</p>
+      </div>
+    </div>
+    <div data-search-output hidden>
+      <p class="section-title" data-search-summary aria-live="polite"></p>
+      <ul class="search-results" id="search-results" role="listbox" aria-label="搜索结果" data-search-results></ul>
+    </div>
+  </div>
+  <div class="search-foot" aria-hidden="true">
+    <span><kbd>↑</kbd> <kbd>↓</kbd> 选择</span>
+    <span><kbd>↵</kbd> 打开</span>
+    <span><kbd>Esc</kbd> 关闭</span>
+  </div>
+</dialog>

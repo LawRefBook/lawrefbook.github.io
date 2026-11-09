@@ -1,0 +1,17 @@
+{{- /* 下级分类排序：数据库里的顺序；各地区按行政区划代码的顺序 */ -}}
+{{- $regions := slice "北京" "天津" "河北" "山西" "内蒙古" "辽宁" "吉林" "黑龙江" "上海" "江苏" "浙江" "安徽" "福建" "江西" "山东" "河南" "湖北" "湖南" "广东" "广西" "海南" "重庆" "四川" "贵州" "云南" "西藏" "陕西" "甘肃" "青海" "宁夏" "新疆" -}}
+{{- $fixed := dict "部门规章" 900 "DLC" 950 "案例" 960 -}}
+{{- $items := slice -}}
+{{- range . -}}
+  {{- $k := partial "section-key.html" . -}}
+  {{- $name := partial "section-name.html" . -}}
+  {{- $order := 5000 -}}
+  {{- with index $fixed $k }}{{ $order = . }}{{ end -}}
+  {{- with hugo.Data.laws }}{{ with index .categories $k }}{{ if lt (int .order) 9999 }}{{ $order = int .order }}{{ end }}{{ end }}{{ end -}}
+  {{- $region := 99 -}}
+  {{- range $ri, $r := $regions }}{{ if eq $r $name }}{{ $region = $ri }}{{ end }}{{ end -}}
+  {{- $items = $items | append (dict "k" (printf "%05d|%02d|%s" $order $region $name) "p" .) -}}
+{{- end -}}
+{{- $out := slice -}}
+{{- range sort $items "k" }}{{ $out = $out | append .p }}{{ end -}}
+{{- return $out -}}

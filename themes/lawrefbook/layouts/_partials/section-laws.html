@@ -1,0 +1,23 @@
+{{- /*
+  分类里列出的法律：每部法律只列一个版本（现行版本，没有时是最新的），顺序和 App 一样。
+  返回 list（[{p: 页面}]，排好序）、pos（地址 → 位置，用于上一部、下一部）、hidden（没列出的历史版本数）。
+  调用时用 partialCached "section-laws.html" . .RelPermalink
+  用 Scratch.SetInMap 收集再排序：上千项时 append 每次都要检查整个列表，很慢
+*/ -}}
+{{- $s := newScratch -}}
+{{- $hidden := 0 -}}
+{{- range .RegularPages -}}
+  {{- $i := partialCached "law-info.html" . .RelPermalink -}}
+  {{- $m := $i.meta -}}
+  {{- if or (not $m) $m.list -}}
+    {{- $rank := 99999 -}}
+    {{- if isset $m "rank" }}{{ $rank = int $m.rank }}{{ end -}}
+    {{- $k := printf "%05d|%s|%s" $rank $i.name .RelPermalink -}}
+    {{- $s.SetInMap "items" $k (dict "k" $k "p" .) -}}
+  {{- else -}}
+    {{- $hidden = add $hidden 1 -}}
+  {{- end -}}
+{{- end -}}
+{{- $list := sort ($s.Get "items" | default dict) "k" -}}
+{{- range $idx, $it := $list }}{{ $s.SetInMap "pos" $it.p.RelPermalink $idx }}{{ end -}}
+{{- return dict "list" $list "pos" ($s.Get "pos" | default dict) "hidden" $hidden -}}

@@ -1,0 +1,69 @@
+{{- define "main" -}}
+{{- $name := partial "section-name.html" . -}}
+<div class="container page">
+  {{ partial "crumbs.html" . }}
+  {{ partial "dev-hint.html" . }}
+  {{- if eq .Path "/docs" }}
+  <header class="page-head">
+    <h1 class="page-title">{{ $name }}</h1>
+    <p class="page-sub">共收录 {{ partialCached "section-count.html" . .RelPermalink }} 部，按分类浏览；也可以直接<button class="link-btn" type="button" data-open-search>搜索</button>。</p>
+  </header>
+  {{ partial "directory.html" (dict "compact" false) }}
+  {{- else }}
+  {{- $laws := partialCached "section-laws.html" . .RelPermalink }}
+  {{- $count := partialCached "section-count.html" . .RelPermalink }}
+  <header class="page-head">
+    <h1 class="page-title">{{ $name }}</h1>
+    <p class="page-sub">共 {{ $count }} 部{{ with $laws.hidden }}，另有 {{ . }} 个历史版本，可在各法律页面的“历史版本”中查看{{ end }}</p>
+  </header>
+
+  {{- with .Sections }}
+  <section class="block" aria-label="下级分类">
+    <div class="tile-grid">{{ range partial "sorted-sections.html" . }}{{ if partialCached "section-count.html" . .RelPermalink }}{{ partial "directory-tile.html" . }}{{ end }}{{ end }}</div>
+  </section>
+  {{- end }}
+
+  {{- with $laws.list }}
+  {{- /* 已失效、已废止的有几部：有的话可以只看现行的 */}}
+  {{- $old := 0 }}
+  {{- range . }}{{ if in (slice "revised" "expired" "abolished") (partialCached "law-info.html" .p .p.RelPermalink).meta.status }}{{ $old = add $old 1 }}{{ end }}{{ end }}
+  {{- if or (gt (len .) 8) (gt $old 0) }}
+  <div class="filter" role="search">
+    <label class="input">
+      <svg class="i i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+      <span class="visually-hidden">筛选</span>
+      <input type="search" placeholder="在“{{ $name }}”中按名称筛选" autocomplete="off" enterkeyhint="search" data-filter-input>
+      <button class="clear-btn" type="button" data-filter-clear hidden aria-label="清除">
+        <svg class="i i-sm" aria-hidden="true"><use href="#i-x-circle"/></svg>
+      </button>
+    </label>
+    {{- if gt $old 0 }}
+    <label class="check" title="隐藏 {{ $old }} 部已修订、已失效、已废止的法律">
+      <input type="checkbox" data-filter-current>
+      <span>只看现行</span>
+    </label>
+    {{- end }}
+  </div>
+  {{- end }}
+  <div class="rows-head" aria-hidden="true"><span>名称</span><span>公布日期</span></div>
+  <ul class="rows" data-filter-list>
+    {{- range . }}
+    {{ partial "law-row.html" (dict "page" .p) }}
+    {{- end }}
+  </ul>
+  <div class="empty" data-filter-empty hidden>
+    <p>“{{ $name }}”里没有名称包含“<span data-filter-query></span>”的法律</p>
+    <p data-filter-current-note hidden>已隐藏已失效、已废止的法律，取消勾选“只看现行”可以显示全部。</p>
+    <button class="btn" type="button" data-filter-search>在全部法律中搜索<svg class="i i-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+  </div>
+  {{- else }}
+  {{- if not $count }}
+  <div class="empty">
+    <p>“{{ $name }}”里还没有法律。</p>
+    <a class="btn" href="{{ "/docs/" | relURL }}">浏览全部法律<svg class="i i-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+  </div>
+  {{- end }}
+  {{- end }}
+  {{- end }}
+</div>
+{{- end -}}

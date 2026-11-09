@@ -1,0 +1,60 @@
+{{- define "main" -}}
+{{- /*
+  修订对比。地址：/diff/?new=刑法/刑法2023-12-29&old=刑法/刑法2020-12-26
+  两个版本的内容由 assets/js/diff.js 读取法律页面后在浏览器里比较
+*/ -}}
+{{- $js := resources.Get "js/diff.js" | js.Build (dict "minify" true "target" "es2019") | fingerprint "sha256" -}}
+<div class="container page diff-page" data-diff data-preview="{{ site.Params.diffPreview | default 0 }}" data-app-store="{{ site.Params.appStore }}">
+  <nav class="crumbs" aria-label="当前位置" data-diff-crumbs>
+    <a href="{{ "/" | relURL }}">首页</a>
+    <svg class="i i-xs" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+    <span>修订对比</span>
+  </nav>
+  <header class="page-head">
+    <h1 class="page-title" data-diff-title>修订对比</h1>
+    <p class="page-sub" data-diff-sub>比较同一部法律的两个版本，标出修改、新增和删除的条文。</p>
+  </header>
+
+  <div class="diff-controls" data-diff-controls hidden>
+    <div class="diff-versions">
+      <div class="diff-version">
+        <label for="diff-old">旧版本</label>
+        <select class="select" id="diff-old" data-diff-old></select>
+        <a class="diff-version-link" href="#" data-diff-old-link>查看全文</a>
+      </div>
+      <svg class="i diff-arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+      <div class="diff-version">
+        <label for="diff-new">新版本</label>
+        <select class="select" id="diff-new" data-diff-new></select>
+        <a class="diff-version-link" href="#" data-diff-new-link>查看全文</a>
+      </div>
+    </div>
+    <div class="diff-toolbar">
+      <div class="diff-filters" role="group" aria-label="只看某类改动">
+        <button class="btn btn--sm diff-filter diff-filter--modified" type="button" data-diff-filter="modified" aria-pressed="false">修改<span class="btn-count">0</span></button>
+        <button class="btn btn--sm diff-filter diff-filter--added" type="button" data-diff-filter="added" aria-pressed="false">新增<span class="btn-count">0</span></button>
+        <button class="btn btn--sm diff-filter diff-filter--removed" type="button" data-diff-filter="removed" aria-pressed="false">删除<span class="btn-count">0</span></button>
+      </div>
+      <label class="check">
+        <input type="checkbox" data-diff-unchanged>
+        <span>显示未改动的条文</span>
+      </label>
+      <div class="diff-toolbar-end">
+        <div class="segmented" role="group" aria-label="显示方式">
+          <button type="button" data-diff-view="inline" aria-pressed="false">合并</button>
+          <button type="button" data-diff-view="split" aria-pressed="false">并排</button>
+        </div>
+        <button class="btn btn--sm" type="button" data-diff-copy>
+          <svg class="i i-sm" aria-hidden="true"><use href="#i-link"/></svg>复制链接
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p class="diff-status" role="status" data-diff-status>正在读取版本…</p>
+  <p class="diff-summary" data-diff-summary></p>
+  <div class="diff-list" data-diff-list></div>
+  <noscript><p class="diff-status is-error">修订对比需要启用 JavaScript。</p></noscript>
+</div>
+<script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
+{{- end -}}

@@ -1,0 +1,4 @@
+<a class="tile" href="{{ .RelPermalink }}">
+  <span class="tile-name">{{ partial "section-name.html" . }}</span>
+  <span class="tile-count">{{ partialCached "section-count.html" . .RelPermalink }} 部</span>
+</a>

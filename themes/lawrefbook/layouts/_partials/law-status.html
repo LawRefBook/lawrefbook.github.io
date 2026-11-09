@@ -1,0 +1,12 @@
+{{- /* 标题上方的一行：状态（现行有效、已修订、已废止……）和施行、失效日期 */ -}}
+{{- $m := . | default dict -}}
+{{- $labels := dict "current" "现行有效" "pending" "尚未施行" "revised" "已修订" "abolished" "已废止" "expired" "已失效" -}}
+{{- $kinds := dict "current" "current" "pending" "pending" "revised" "revised" "abolished" "expired" "expired" "expired" -}}
+{{- with $m.status }}
+<div class="law-status">
+  <span class="badge badge--{{ index $kinds . }}">{{ index $labels . }}</span>
+  {{- with $m.pub }}<span>{{ partial "cn-date.html" . }}公布</span>{{ end }}
+  {{- with $m.from }}<span>{{ partial "cn-date.html" . }}施行</span>{{ end }}
+  {{- with $m.to }}<span>有效至{{ partial "cn-date.html" . }}</span>{{ end }}
+</div>
+{{- end -}}

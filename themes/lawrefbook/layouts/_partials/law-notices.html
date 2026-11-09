@@ -1,0 +1,57 @@
+{{- /*
+  正文顶部的提示卡片（App 的 LawNoticeCard）：此版本已失效、已废止、即将废止、尚未施行、新版本即将施行。
+  浅灰底，状态色只用在图标上；能去别的版本时整张卡片可以点
+*/ -}}
+{{- $m := .meta | default dict -}}
+{{- $n := slice -}}
+{{- $r := $m.replacement -}}
+{{- $expired := in (slice "revised" "expired" "abolished") $m.status -}}
+{{- if and (in (slice "revised" "expired") $m.status) $r -}}
+  {{- $msg := "已有新版本。" -}}
+  {{- if $r.pending }}{{ $msg = printf "新版本将于 %s起施行。" (partial "cn-date.html" $r.from) -}}
+  {{- else if $r.pub }}{{ $msg = printf "现行版本已于 %s公布。" (partial "cn-date.html" $r.pub) -}}
+  {{- else if $r.from }}{{ $msg = printf "现行版本自 %s起施行。" (partial "cn-date.html" $r.from) }}{{ end -}}
+  {{- $href := "" }}{{ with site.GetPage (printf "/docs/%s" $r.key) }}{{ $href = .RelPermalink }}{{ end -}}
+  {{- $n = $n | append (dict "kind" "revised" "icon" "history" "title" "此版本已失效" "msg" $msg "action" (cond $r.pending "查看新版本" "查看现行版本") "href" $href) -}}
+{{- else if eq $m.status "revised" -}}
+  {{- $n = $n | append (dict "kind" "revised" "icon" "history" "title" "此版本已失效" "msg" "已被新版本替代。") -}}
+{{- else if eq $m.status "expired" -}}
+  {{- $msg := "本法规已失效。" }}{{ with $m.to }}{{ $msg = printf "已于 %s失效。" (partial "cn-date.html" .) }}{{ end -}}
+  {{- $n = $n | append (dict "kind" "expired" "icon" "ban" "title" "已失效" "msg" $msg) -}}
+{{- end -}}
+{{- with $m.abolisher -}}
+  {{- $name := .name -}}
+  {{- $href := "" -}}
+  {{- with .key }}{{ with site.GetPage (printf "/docs/%s" .) }}{{ $href = .RelPermalink }}{{ end }}{{ end -}}
+  {{- with .section }}{{ with site.GetPage (printf "/docs/%s" .) }}{{ $href = .RelPermalink }}{{ end }}{{ end -}}
+  {{- $verb := "将被" }}{{ if $expired }}{{ $verb = "已被" }}{{ end -}}
+  {{- $msg := printf "本法规%s废止。" $verb -}}
+  {{- $action := "" -}}
+  {{- with $name }}{{ $msg = printf "%s《%s》废止。" $verb . }}{{ if $href }}{{ $action = printf "查看《%s》" . }}{{ end }}{{ end -}}
+  {{- $n = $n | append (dict "kind" (cond $expired "expired" "revised") "icon" "ban" "title" (cond $expired "已废止" "即将废止") "msg" $msg "action" $action "href" $href) -}}
+{{- end -}}
+{{- if eq $m.status "pending" -}}
+  {{- $msg := "本版本尚未施行。" }}{{ with $m.from }}{{ $msg = printf "本版本将于 %s起施行。" (partial "cn-date.html" .) }}{{ end -}}
+  {{- $href := "" }}{{ with $r }}{{ if not .pending }}{{ with site.GetPage (printf "/docs/%s" .key) }}{{ $href = .RelPermalink }}{{ end }}{{ end }}{{ end -}}
+  {{- $n = $n | append (dict "kind" "pending" "icon" "calendar" "title" "尚未施行" "msg" $msg "action" (cond (ne $href "") "查看现行版本" "") "href" $href) -}}
+{{- end -}}
+{{- with $m.upcoming -}}
+  {{- $href := "" }}{{ with site.GetPage (printf "/docs/%s" .key) }}{{ $href = .RelPermalink }}{{ end -}}
+  {{- $n = $n | append (dict "kind" "pending" "icon" "calendar" "title" "新版本即将施行" "msg" (printf "新版本将于 %s起施行。" (partial "cn-date.html" .from)) "action" "查看新版本" "href" $href) -}}
+{{- end -}}
+{{- with $n }}
+<div class="notices">
+  {{- range . }}
+  {{- if .href }}<a class="notice notice--{{ .kind }}" href="{{ .href }}">{{ else }}<div class="notice notice--{{ .kind }}">{{ end }}
+    <svg class="i" aria-hidden="true"><use href="#i-{{ .icon }}"/></svg>
+    <span class="notice-text">
+      <span class="notice-title">{{ .title }}</span>
+      <span class="notice-msg">{{ .msg }}</span>
+      {{- if and .href .action }}
+      <span class="notice-action">{{ .action }}<svg class="i i-xs" aria-hidden="true"><use href="#i-chevron-right"/></svg></span>
+      {{- end }}
+    </span>
+  {{- if .href }}</a>{{ else }}</div>{{ end }}
+  {{- end }}
+</div>
+{{- end -}}

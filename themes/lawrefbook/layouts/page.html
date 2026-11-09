@@ -1,0 +1,73 @@
+{{- define "main" -}}
+{{- if ne .Section "docs" }}
+<div class="container page"><h1 class="page-title">{{ .Title }}</h1><div class="prose">{{ .Content }}</div></div>
+{{- else }}
+{{- $v := partialCached "law-view.html" . .RelPermalink -}}
+{{- $i := partialCached "law-info.html" . .RelPermalink -}}
+{{- $m := $i.meta -}}
+{{- $title := $v.title | default $i.name -}}
+{{- $section := partial "section-name.html" .Parent -}}
+<div class="container law-layout{{ if $v.toc }} has-toc{{ end }}">
+  {{- if $v.toc }}
+  {{ partial "toc.html" (dict "page" . "articles" $v.articles) }}
+  {{- end }}
+  <article class="law" data-law data-title="{{ $title }}" data-name="{{ $i.name }}" data-section="{{ $section }}">
+    {{ partial "crumbs.html" . }}
+    <header class="law-head">
+      {{ partial "law-status.html" $m }}
+      <h1 class="law-title">{{ $title }}</h1>
+      {{- with $v.info }}
+      <div class="law-info">{{ . | safeHTML }}</div>
+      {{- end }}
+      <div class="law-toolbar" role="toolbar" aria-label="操作">
+        <button class="btn" type="button" data-fav aria-pressed="false">
+          <svg class="i i-sm" aria-hidden="true"><use href="#i-star"/></svg><span data-fav-label>收藏</span>
+        </button>
+        <button class="btn" type="button" data-share>
+          <svg class="i i-sm" aria-hidden="true"><use href="#i-link"/></svg><span data-share-label>复制链接</span>
+        </button>
+        {{- $diff := "" }}
+        {{- with partial "diff-pair.html" (dict "key" $i.key "meta" $m) }}{{ $diff = partial "diff-url.html" . }}{{ end }}
+        {{- with $m.lineage }}{{ with index hugo.Data.laws.lineages . }}
+        {{ partial "law-versions.html" (dict "keys" . "current" $i.key "diff" $diff) }}
+        {{- end }}{{ end }}
+        {{- with $diff }}
+        <a class="btn" href="{{ . }}"><svg class="i i-sm" aria-hidden="true"><use href="#i-compare"/></svg>修订对比</a>
+        {{- end }}
+        <div class="btn-group" role="group" aria-label="正文字号">
+          <button class="btn" type="button" data-font-step="-1" aria-label="减小字号" title="减小字号"><span class="font-a font-a--sm">A</span></button>
+          <button class="btn" type="button" data-font-step="1" aria-label="增大字号" title="增大字号"><span class="font-a font-a--lg">A</span></button>
+        </div>
+        <button class="btn btn--print" type="button" data-print>
+          <svg class="i i-sm" aria-hidden="true"><use href="#i-printer"/></svg>打印
+        </button>
+      </div>
+      {{ partial "law-notices.html" (dict "meta" $m "page" .) }}
+    </header>
+
+    <div class="law-body" id="law-body" data-law-body>
+      {{ $v.body | safeHTML }}
+    </div>
+
+    <p class="law-source">
+      法律内容来源于<a href="{{ site.Params.source }}" rel="noopener">国家法律法规数据库</a>，仅供参考，以官方发布的文本为准。
+      发现错误？<a href="{{ site.Params.lawsRepo }}/issues/new?title={{ printf "《%s》内容有误" $i.name | urlquery }}" rel="noopener">提交反馈</a>
+    </p>
+
+    {{- /* 上一部、下一部：同一分类的列表里相邻的法律，由 scripts/export_meta.py 算好 */}}
+    {{- $prev := "" }}{{ with $m.prev }}{{ $prev = site.GetPage (printf "/docs/%s" .) }}{{ end }}
+    {{- $next := "" }}{{ with $m.next }}{{ $next = site.GetPage (printf "/docs/%s" .) }}{{ end }}
+    {{- if or $prev $next }}
+    <nav class="pager" aria-label="{{ $section }}中的其他法律">
+      {{- with $prev }}
+      <a class="prev" href="{{ .RelPermalink }}" rel="prev"><small>上一部</small><span>{{ (partialCached "law-info.html" . .RelPermalink).name }}</span></a>
+      {{- end }}
+      {{- with $next }}
+      <a class="next" href="{{ .RelPermalink }}" rel="next"><small>下一部</small><span>{{ (partialCached "law-info.html" . .RelPermalink).name }}</span></a>
+      {{- end }}
+    </nav>
+    {{- end }}
+  </article>
+</div>
+{{- end }}
+{{- end -}}

@@ -1,0 +1,85 @@
+{{- /*
+  网站顶部导航：左边是网站名，中间是主要分类，右边是搜索和外观。窄屏把分类收进菜单
+*/ -}}
+{{- $p := . -}}
+
+{{- /* 当前页面属于哪个一级分类，用来高亮导航 */ -}}
+{{- $active := "" -}}
+{{- if eq $p.Section "docs" -}}
+  {{- $active = "all" -}}
+  {{- $chain := slice $p -}}
+  {{- range $p.Ancestors }}{{ $chain = $chain | append . }}{{ end -}}
+  {{- range $c := $chain -}}
+    {{- with $c.Parent }}{{ if eq .Path "/docs" }}
+      {{- $k := partial "section-key.html" $c -}}
+      {{- if in (slice "行政法规" "司法解释" "部门规章" "DLC" "案例") $k }}{{ $active = $k }}{{ end -}}
+    {{- end }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $nav := slice -}}
+{{- range slice
+  (dict "id" "all" "label" "全部法律" "path" "/docs")
+  (dict "id" "行政法规" "label" "行政法规" "path" "/docs/行政法规")
+  (dict "id" "司法解释" "label" "司法解释" "path" "/docs/司法解释")
+  (dict "id" "部门规章" "label" "部门规章" "path" "/docs/部门规章")
+  (dict "id" "DLC" "label" "地方性法规" "path" "/docs/DLC")
+  (dict "id" "案例" "label" "司法案例" "path" "/docs/案例")
+-}}
+  {{- $item := . -}}
+  {{- with site.GetPage .path }}{{ $nav = $nav | append (merge $item (dict "url" .RelPermalink)) }}{{ end -}}
+{{- end -}}
+
+<header class="site-header" data-header>
+  <div class="container header-inner">
+    <a class="logo" href="{{ "/" | relURL }}">
+      <img src="{{ "favicon-64.png" | relURL }}" alt="" width="28" height="28">
+      <span>{{ site.Title }}</span>
+    </a>
+
+    <nav class="main-nav" aria-label="主导航">
+      {{- range $nav }}
+      <a href="{{ .url }}"{{ if eq .id $active }} class="is-active" aria-current="{{ if and (eq .id "all") (eq $p.Path "/docs") }}page{{ else }}true{{ end }}"{{ end }}>{{ .label }}</a>
+      {{- end }}
+    </nav>
+
+    <div class="header-actions">
+      <button class="header-search" type="button" data-open-search aria-label="搜索法律法规">
+        <svg class="i i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+        <span class="header-search-label">搜索法律法规…</span>
+        <kbd data-shortcut>/</kbd>
+      </button>
+
+      <div class="dropdown theme-dropdown" data-dropdown>
+        <button class="icon-btn" type="button" data-dropdown-toggle aria-haspopup="menu" aria-expanded="false" aria-label="外观" title="外观">
+          <svg class="i" aria-hidden="true"><use href="#i-auto" data-theme-icon/></svg>
+        </button>
+        <div class="dropdown-menu dropdown-menu--right" role="menu" aria-label="外观" data-dropdown-menu hidden>
+          <button type="button" role="menuitemradio" aria-checked="true" data-theme-value="auto"><svg class="i i-sm" aria-hidden="true"><use href="#i-auto"/></svg>跟随系统</button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-theme-value="light"><svg class="i i-sm" aria-hidden="true"><use href="#i-sun"/></svg>浅色</button>
+          <button type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark"><svg class="i i-sm" aria-hidden="true"><use href="#i-moon"/></svg>深色</button>
+        </div>
+      </div>
+
+      <button class="icon-btn menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="菜单">
+        <svg class="i" aria-hidden="true"><use href="#i-menu" data-menu-icon/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <nav class="container" aria-label="主导航">
+      {{- range $nav }}
+      <a href="{{ .url }}"{{ if eq .id $active }} class="is-active" aria-current="true"{{ end }}>{{ .label }}</a>
+      {{- end }}
+    </nav>
+    <div class="container mobile-menu-theme">
+      <span id="mobile-theme-label">外观</span>
+      <div class="segmented" role="group" aria-labelledby="mobile-theme-label">
+        <button type="button" data-theme-value="auto" aria-pressed="true">跟随系统</button>
+        <button type="button" data-theme-value="light" aria-pressed="false">浅色</button>
+        <button type="button" data-theme-value="dark" aria-pressed="false">深色</button>
+      </div>
+    </div>
+  </div>
+</header>

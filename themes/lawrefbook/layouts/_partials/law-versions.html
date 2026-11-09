@@ -1,0 +1,29 @@
+{{- /* 历史版本下拉菜单，新版在前。参数：keys（同一部法律各版本的文件），current（当前页面的文件） */ -}}
+<div class="dropdown" data-dropdown>
+  <button class="btn" type="button" data-dropdown-toggle aria-haspopup="menu" aria-expanded="false">
+    <svg class="i i-sm" aria-hidden="true"><use href="#i-history"/></svg>历史版本<span class="btn-count">{{ len .keys }}</span>
+    <svg class="i i-xs" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+  </button>
+  <div class="dropdown-menu versions-menu" role="menu" aria-label="历史版本" data-dropdown-menu hidden>
+    <p class="dropdown-label">共 {{ len .keys }} 个版本，新版在前</p>
+    {{- range .keys }}
+    {{- $key := . }}
+    {{- with site.GetPage (printf "/docs/%s" .) }}
+    {{- $m := (partialCached "law-info.html" . .RelPermalink).meta }}
+    {{- $isCurrent := eq $key $.current }}
+    {{- $date := "日期不详" }}
+    {{- if $m.pub }}{{ $date = printf "%s公布" (partial "cn-date.html" $m.pub) }}{{ else if $m.from }}{{ $date = printf "%s施行" (partial "cn-date.html" $m.from) }}{{ end }}
+    <a class="version{{ if $isCurrent }} is-current{{ end }}" role="menuitem" href="{{ .RelPermalink }}"{{ if $isCurrent }} aria-current="page"{{ end }}>
+      <span class="version-date">{{ $date }}</span>
+      {{- if eq $m.status "current" }}<span class="badge badge--current">现行</span>
+      {{- else if eq $m.status "pending" }}<span class="badge badge--pending">未施行</span>
+      {{- else }}<span class="badge badge--expired">已失效</span>{{ end }}
+      {{- if $isCurrent }}<svg class="i i-sm" aria-label="当前页面"><use href="#i-check"/></svg>{{ end }}
+    </a>
+    {{- end }}
+    {{- end }}
+    {{- with .diff }}
+    <a class="dropdown-footer" role="menuitem" href="{{ . }}"><svg class="i i-sm" aria-hidden="true"><use href="#i-compare"/></svg>对比两个版本的修订</a>
+    {{- end }}
+  </div>
+</div>

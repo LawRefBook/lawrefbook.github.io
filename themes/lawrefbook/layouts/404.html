@@ -1,0 +1,12 @@
+{{- define "main" -}}
+<div class="container page notfound">
+  <p class="notfound-code">404</p>
+  <h1 class="page-title">页面不存在</h1>
+  <p>页面可能已经移动或改名，可以试试搜索。</p>
+  <button class="hero-search notfound-search" type="button" data-open-search>
+    <svg class="i i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+    <span class="hero-search-label">搜索法律法规</span>
+  </button>
+  <a class="link-btn" href="{{ "/" | relURL }}">回到首页 <svg class="i i-sm" aria-hidden="true"><use href="#i-chevron-right"/></svg></a>
+</div>
+{{- end -}}

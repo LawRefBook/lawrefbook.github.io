@@ -1,17 +1,56 @@
-baseURL = "/"
+baseURL = "https://lawrefbook.github.io/"
 title = "中国法律快查手册"
-languageCode = 'zh-cn'
-defaultContentLanguage = 'zh'
+locale = "zh-CN"
+defaultContentLanguage = "zh"
+hasCJKLanguage = true
+theme = "lawrefbook"
 
-theme = ["hugo-book"]
-# enableGitInfo = true
+enableRobotsTXT = true
+# 一万多部法律，分类页和标签页用不上；RSS 也没人订阅整个法律库
+disableKinds = ["taxonomy", "term", "rss"]
 
 [params]
-  BookTheme = 'auto'
+  description = "收录中国现行法律、行政法规、司法解释、部门规章和地方性法规，按分类浏览，快速搜索，逐条查阅。"
+  appStore = "https://apps.apple.com/app/apple-store/id1612953870?pt=124208302&ct=web&mt=8"
+  github = "https://github.com/LawRefBook"
+  lawsRepo = "https://github.com/LawRefBook/Laws"
+  source = "https://flk.npc.gov.cn"
 
-  BookToC = true
-  BookSection = 'docs'
+[markup.goldmark.renderer]
+  # 正文用 <!-- INFO END --> 分开开头的信息部分，需要保留 HTML 注释
+  unsafe = true
 
-  BookSearch = true
-  BookComments = false
-  BookFlatSection = true
+[markup.goldmark.extensions.cjk]
+  enable = true
+  eastAsianLineBreaks = true
+
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 5
+
+[sitemap]
+  changeFreq = "weekly"
+
+# 搜索索引：首页的另一种输出，生成 /search-index.json，只在第一次搜索时下载。
+# 不在各页面里用 partialCached 生成：每个页面都会依赖全部法律，一万多页时构建非常慢
+[outputFormats.searchindex]
+  mediaType = "application/json"
+  baseName = "search-index"
+  isPlainText = true
+  notAlternative = true
+
+[outputs]
+  home = ["html", "searchindex"]
+
+# content/docs 是 Laws 仓库，排除里面不是法律的文件
+[module]
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+    files = [
+      "! docs/scripts/**",
+      "! docs/README.md",
+      "! docs/法律法规模版.md",
+      "! docs/Makefile",
+      "! **.sqlite3",
+    ]

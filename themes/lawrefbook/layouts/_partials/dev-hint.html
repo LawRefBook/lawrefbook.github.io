@@ -1,0 +1,10 @@
+{{- /* 本地预览（hugo server）时 content/docs 是空的：提示先拉取 Laws 子模块。正式构建不会显示 */ -}}
+{{- if and hugo.IsServer (not (where site.RegularPages "Section" "docs")) }}
+<div class="notice notice--pending dev-hint" role="note">
+  <svg class="i" aria-hidden="true"><use href="#i-info"/></svg>
+  <span class="notice-text">
+    <span class="notice-title">没有找到法律正文</span>
+    <span class="notice-msg">content/docs 是 Laws 子模块，本地还没有拉取。在仓库目录运行 <code>git submodule update --init --depth 1 content/docs</code>，再运行 <code>python3 scripts/export_meta.py</code> 更新 data/laws.json。</span>
+  </span>
+</div>
+{{- end -}}

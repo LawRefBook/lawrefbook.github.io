@@ -1,0 +1,30 @@
+{{- /*
+  本页目录：宽屏固定在正文右边；窄屏是正文上方吸顶的一条，显示读到的章节，点开是下拉的目录。
+  可以直接跳到第几条
+*/ -}}
+<aside class="toc" id="toc" aria-label="本页目录" data-toc>
+  <button class="toc-bar" type="button" data-toc-toggle aria-expanded="false" aria-controls="toc-panel">
+    <svg class="i i-sm" aria-hidden="true"><use href="#i-list"/></svg>
+    <span class="toc-bar-label">目录</span>
+    <span class="toc-bar-current" data-toc-current></span>
+    <svg class="i i-sm toc-bar-chev" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+  </button>
+  <div class="toc-panel" id="toc-panel" data-toc-panel>
+    <p class="toc-title">本页目录</p>
+    {{- if gt .articles 0 }}
+    <form class="toc-jump" data-jump>
+      <label for="jump-input">跳到</label>
+      <span class="input input--sm">
+        <span aria-hidden="true">第</span>
+        <input id="jump-input" type="text" inputmode="numeric" placeholder="20 或 二十" autocomplete="off" enterkeyhint="go">
+        <span aria-hidden="true">条</span>
+      </span>
+      <button class="btn btn--sm" type="submit">跳转</button>
+    </form>
+    <p class="toc-jump-msg" data-jump-msg hidden></p>
+    {{- end }}
+    <nav class="toc-body" data-toc-body aria-label="章节">
+      <ul class="toc-list">{{ partial "toc-items.html" .page.Fragments.Headings }}</ul>
+    </nav>
+  </div>
+</aside>

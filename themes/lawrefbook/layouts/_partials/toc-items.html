@@ -1,0 +1,20 @@
+{{- /* 目录的各项，按标题层级嵌套。一级标题是法律名称，不放进目录，直接列出它下面的 */ -}}
+{{- range . -}}
+  {{- if or (eq .Level 1) (not .Title) -}}
+    {{- with .Headings }}{{ partial "toc-items.html" . }}{{ end -}}
+  {{- else -}}
+  <li class="toc-node">
+    <div class="toc-item">
+      <a class="toc-link" href="#{{ .ID }}" data-toc-link>{{ .Title | safeHTML }}</a>
+      {{- if .Headings }}
+      <button class="toc-toggle" type="button" aria-expanded="true" aria-label="折叠">
+        <svg class="i" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+      </button>
+      {{- end }}
+    </div>
+    {{- with .Headings }}
+    <ul class="toc-list">{{ partial "toc-items.html" . }}</ul>
+    {{- end }}
+  </li>
+  {{- end -}}
+{{- end -}}

@@ -1,0 +1,18 @@
+{{- /* 列表里的状态标签，跟 App 的 LawLinkView 一样：已修订、失效于、被《X》废止、未实施、新版待施行 */ -}}
+{{- $m := . | default dict -}}
+{{- $b := slice -}}
+{{- if eq $m.status "revised" -}}
+  {{- $b = $b | append (dict "t" "已修订" "c" "revised") -}}
+{{- else if eq $m.status "expired" -}}
+  {{- $t := "已失效" -}}
+  {{- with $m.to }}{{ $t = printf "失效于%s" (partial "cn-date.html" .) }}{{ end -}}
+  {{- $b = $b | append (dict "t" $t "c" "expired") -}}
+{{- else if eq $m.status "abolished" -}}
+  {{- $t := "已废止" -}}
+  {{- with $m.abolisher }}{{ with .name }}{{ $t = printf "被《%s》废止" . }}{{ end }}{{ end -}}
+  {{- $b = $b | append (dict "t" $t "c" "expired") -}}
+{{- else if eq $m.status "pending" -}}
+  {{- $b = $b | append (dict "t" "未实施" "c" "pending") -}}
+{{- end -}}
+{{- with $m.upcoming }}{{ $b = $b | append (dict "t" "新版待施行" "c" "pending") }}{{ end -}}
+{{- with $b }}<span class="badges">{{ range . }}<span class="badge badge--{{ .c }}" title="{{ .t }}">{{ .t }}</span>{{ end }}</span>{{ end -}}

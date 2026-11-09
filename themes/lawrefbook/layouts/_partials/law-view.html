@@ -1,0 +1,25 @@
+{{- /*
+  处理法律正文，返回 title（正文的一级标题）、info（<!-- INFO END --> 之前的信息）、body（正文）、
+  toc（有没有目录）、articles（有几条）。
+  每条的条号所在段落加上 id，可以直接链接到某一条，比如 #第二十条，和 App 一样条号加粗。
+  调用时用 partialCached "law-view.html" . .RelPermalink
+*/ -}}
+{{- $html := .Content | string -}}
+{{- $marker := "<!-- INFO END -->" -}}
+{{- $title := "" -}}
+{{- with findRESubmatch `(?s)<h1[^>]*>(.*?)</h1>` $html 1 }}{{ $title = index (index . 0) 1 | plainify | htmlUnescape | strings.TrimSpace }}{{ end -}}
+{{- $info := "" -}}
+{{- $body := $html -}}
+{{- if in $html $marker -}}
+  {{- $parts := split $html $marker -}}
+  {{- $info = index $parts 0 | replaceRE `(?s)<h1[^>]*>.*?</h1>` "" | strings.TrimSpace -}}
+  {{- $body = delimit (after 1 $parts) $marker -}}
+{{- else -}}
+  {{- $body = replaceRE `(?s)<h1[^>]*>.*?</h1>` "" $body 1 -}}
+{{- end -}}
+{{- $body = replaceRE `<p>(第[一二三四五六七八九十百千零〇]+条(?:之[一二三四五六七八九十]+)?)(?:[ \x{3000}]|&nbsp;)+` `<p class="art" id="${1}"><a class="art-no" href="#${1}">${1}</a> ` $body -}}
+{{- $body = replace $body "<table>" `<div class="table-wrap"><table>` -}}
+{{- $body = replace $body "</table>" `</table></div>` -}}
+{{- $headings := findRE `<h[2-5][ >]` $body -}}
+{{- $articles := findRE `<p class="art"` $body -}}
+{{- return dict "title" $title "info" $info "body" $body "toc" (ge (len $headings) 2) "articles" (len $articles) -}}
